@@ -1,15 +1,15 @@
-# cssmaker
+# go-scss
 Utility that track directory changes and recompile sass/scss source files to css
 
 ## How To Install   
 ```bash
-go install github.com/night-codes/cssmaker
+go install github.com/night-codes/scss
 ```
 
 ## How to use
 
 ```bash
-cssmaker -i scss/style.scss -o css/style.css -t scss/ 
+scss -i scss/style.scss -o css/style.css -t scss/ 
 ```
 
 ## Options 
