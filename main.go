@@ -25,15 +25,12 @@ var (
 )
 
 func main() {
+	args.Output = "style.css"
+	args.Input = "scss/style.scss"
 	arg.MustParse(&args)
+
 	sass.OutputStyle(sass.COMPRESSED_STYLE)
 
-	if args.Output == "" {
-		args.Output = "style.css"
-	}
-	if args.Input == "" {
-		args.Input = "scss/style.scss"
-	}
 	if args.Watch == "" {
 		makecss()
 		os.Exit(0)
