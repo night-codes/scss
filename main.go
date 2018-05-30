@@ -16,20 +16,22 @@ import (
 var (
 	inputFile  = flag.String("i", "scss/style.scss", "Input SCSS file.")
 	outputFile = flag.String("o", "css/style.css", "Output CSS file.")
-	watchDir   = flag.String("t", "", "Track directory")
+	watchDir   = flag.String("watch", "", "Watch directory for changes.")
 	filelist   = make(map[string]time.Time)
 )
 
 func main() {
 	flag.Parse()
+	sass.OutputStyle(sass.COMPRESSED_STYLE)
+	
 	if *watchDir == "" {
-		fmt.Println("CSSMaker: please set track directory\n")
-		flag.PrintDefaults()
+		makecss()
 		os.Exit(0)
 	}
-	sass.OutputStyle(sass.COMPRESSED_STYLE)
-	fmt.Printf("CSSMaker started to track \"%s\"\n", *watchDir)
 
+
+	fmt.Printf("SCSS started to track \"%s\"\n", *watchDir)
+	
 	for {
 		changes := false
 		filepath.Walk(*watchDir, func(path string, info os.FileInfo, err error) error {
