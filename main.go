@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
+	"github.com/alexflint/go-arg"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,27 +14,36 @@ import (
 )
 
 var (
-	inputFile  = flag.String("i", "scss/style.scss", "Input SCSS file.")
-	outputFile = flag.String("o", "css/style.css", "Output CSS file.")
-	watchDir   = flag.String("watch", "", "Watch directory for changes.")
-	filelist   = make(map[string]time.Time)
+	args struct {
+		Input  string `arg:"positional" help:"Input SCSS file (\"scss/style.scss\")."`
+		Output string `arg:"positional" help:"Output CSS file (\"style.css\")."`
+		Watch  string `arg:"-w" help:"Watch directory for changes."`
+		Import string `arg:"-i" help:"Specify a Scss import path."`
+	}
+
+	filelist = make(map[string]time.Time)
 )
 
 func main() {
-	flag.Parse()
+	arg.MustParse(&args)
 	sass.OutputStyle(sass.COMPRESSED_STYLE)
-	
-	if *watchDir == "" {
+
+	if args.Output == "" {
+		args.Output = "style.css"
+	}
+	if args.Input == "" {
+		args.Input = "scss/style.scss"
+	}
+	if args.Watch == "" {
 		makecss()
 		os.Exit(0)
 	}
 
+	fmt.Printf("SCSS started to watch \"%s\"\n", args.Watch)
 
-	fmt.Printf("SCSS started to track \"%s\"\n", *watchDir)
-	
 	for {
 		changes := false
-		filepath.Walk(*watchDir, func(path string, info os.FileInfo, err error) error {
+		filepath.Walk(args.Watch, func(path string, info os.FileInfo, err error) error {
 			if err == nil && info != nil && !info.IsDir() {
 				if t, ok := filelist[path]; !ok || t != info.ModTime() {
 					filelist[path] = info.ModTime()
@@ -57,7 +66,7 @@ func main() {
 
 func makecss() {
 	cssbufer := bytes.Buffer{}
-	scssfile, err := os.Open(*inputFile)
+	scssfile, err := os.Open(args.Input)
 	if err != nil {
 		log.Println("Error: ", err)
 	}
@@ -67,13 +76,15 @@ func makecss() {
 		log.Println("Error: ", err)
 	}
 	// configure @import paths
-	if err := comp.Option(sass.IncludePaths([]string{*watchDir})); err != nil {
-		log.Println("Error: ", err)
+	if args.Import != "" {
+		if err := comp.Option(sass.IncludePaths([]string{args.Import})); err != nil {
+			log.Println("Error: ", err)
+		}
 	}
 	if err := comp.Run(); err != nil {
 		log.Println("Error: ", err)
 	}
-	if err := ioutil.WriteFile(*outputFile, cssbufer.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(args.Output, cssbufer.Bytes(), 0644); err != nil {
 		log.Println("Error: ", err)
 	}
 }
