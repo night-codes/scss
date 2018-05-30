@@ -1,5 +1,5 @@
 # go-scss
-Utility that track directory changes and recompile sass/scss source files to css
+Sass/scss compiler written on golang
 
 ## How To Install   
 ```bash
